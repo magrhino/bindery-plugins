@@ -86,7 +86,7 @@ def test_a_failed_attach_to_an_empty_row_raises_copy_failed(adder, tmp_path):
     lib = FormatLibrary()
     ghost = lib.seed("Eight Stories", ["Isaac Asimov"], {"bindery": "42"})
 
-    def broken_add_format(book_id, fmt, path, run_hooks=True):
+    def broken_add_format(book_id, fmt, path, replace=True, run_hooks=True):
         raise PermissionError(13, "Permission denied")
 
     lib.add_format = broken_add_format
@@ -241,7 +241,8 @@ def test_genesis_builds_a_dispatcher_and_hands_it_to_the_server():
     try:
         action = _genesis(stubs, mod, mock_server_cls, mock_cfg, with_dispatcher=True)
 
-        assert len(_FakeDispatcher.made) == 1
+        # 0.7.0 builds a second one, on_updated; see test_bridge_0_7_0.
+        assert len(_FakeDispatcher.made) == 2
         dispatcher = _FakeDispatcher.made[0]
         assert dispatcher.constructed_on is threading.main_thread()
         assert action._on_added is dispatcher
@@ -292,7 +293,7 @@ def test_health_hides_the_library_without_a_token(bridge_handlers, serve_bridge)
     status, payload, _ = bridge.call("GET", "/v1/health")
     assert status == 200
     assert payload["library"] == ""
-    assert payload["plugin_version"] == "0.6.3"
+    assert payload["plugin_version"] == "0.7.0"
     assert "error_codes" in payload["capabilities"]
 
 
